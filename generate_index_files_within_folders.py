@@ -1,46 +1,45 @@
 import os
 
-INDEX_TEMPLATE = """<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{title} - Plotly Viewer</title>
-    <style>
-        body {{ font-family: Arial, sans-serif; text-align: center; }}
-        ul {{ list-style-type: none; padding: 0; }}
-        li {{ margin: 10px 0; }}
-        a {{ text-decoration: none; color: blue; font-size: 18px; }}
-        a:hover {{ text-decoration: underline; }}
-    </style>
-</head>
-<body>
-    <h1>{title}</h1>
-    {back_link}
-    <ul>
-        {links}
-    </ul>
-</body>
-</html>
-"""
+# Skip system and hidden directories, especially .github/
+def should_skip_directory(dir_path):
+    parts = dir_path.split(os.sep)
+    return any(part.startswith('.') for part in parts)  # Skip hidden directories
 
-def generate_indexes(base_dir):
+# Function to generate an index.html file inside a given folder
+def generate_index_html(folder_path):
+    files = sorted(os.listdir(folder_path))
+    
+    # Filter only HTML files
+    html_files = [f for f in files if f.endswith('.html') and f != 'index.html']
+    subdirs = [f for f in files if os.path.isdir(os.path.join(folder_path, f))]
+
+    index_path = os.path.join(folder_path, "index.html")
+    
+    with open(index_path, "w", encoding="utf-8") as f:
+        f.write("<!DOCTYPE html>\n<html>\n<head>\n<title>Index</title>\n</head>\n<body>\n")
+        f.write(f"<h1>Index of {folder_path}</h1>\n<ul>\n")
+        
+        # Add links to subdirectories
+        for subdir in subdirs:
+            f.write(f'  <li><a href="{subdir}/index.html">{subdir}/</a></li>\n')
+
+        # Add links to HTML files
+        for html_file in html_files:
+            f.write(f'  <li><a href="{html_file}">{html_file}</a></li>\n')
+
+        f.write("</ul>\n</body>\n</html>")
+
+    print(f"Generated: {index_path}")
+
+# Recursively process all directories in the repository
+def generate_indexes_recursively(base_dir):
     for root, dirs, files in os.walk(base_dir):
-        if ".git" in root.split(os.sep):  # Skip .git directory
-            continue
+        if should_skip_directory(root):
+            continue  # Skip .github and hidden folders
+        generate_index_html(root)
 
-        rel_path = os.path.relpath(root, base_dir)
-        title = "Root" if rel_path == "." else rel_path
-        back_link = '<a href="../index.html">⬅ Back</a>' if rel_path != "." else ""
-
-        links = [f'<li><a href="{file}" target="_blank">{file}</a></li>' for file in sorted(files) if file.endswith(".html")]
-        links += [f'<li><a href="{folder}/index.html">📁 {folder}/</a></li>' for folder in sorted(dirs)]
-
-        index_html = INDEX_TEMPLATE.format(title=title, back_link=back_link, links="\n".join(links))
-        with open(os.path.join(root, "index.html"), "w", encoding="utf-8") as f:
-            f.write(index_html)
-
-    print("✅ Index files generated recursively!")
-
+# Run the script from the repository root
 if __name__ == "__main__":
-    generate_indexes(os.getcwd())
+    repo_root = os.path.dirname(os.path.abspath(__file__))  # Script location
+    generate_indexes_recursively(repo_root)
+    print("✅ All index.html files updated successfully!")
