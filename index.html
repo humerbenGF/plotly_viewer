@@ -5,63 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plotly Viewer</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        li {
-            margin: 10px 0;
-        }
-        a {
-            text-decoration: none;
-            color: blue;
-            font-size: 18px;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
+        body { font-family: Arial, sans-serif; text-align: center; }
+        ul { list-style-type: none; padding: 0; }
+        li { margin: 10px 0; }
+        a { text-decoration: none; color: blue; font-size: 18px; }
+        a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
     <h1>Plotly Plot Viewer</h1>
-    <p>Click on a plot to view it:</p>
-    <ul id="plot-list"></ul>
-
-    <script>
-        async function fetchPlots() {
-            const repoOwner = "humerbenGF";  // Replace with your GitHub username
-            const repoName = "plotly_viewer";   // Replace with your repo name
-            const branch = "main";              // Change if using a different branch
-
-            const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/git/trees/${branch}?recursive=1`;
-
-            try {
-                const response = await fetch(apiUrl);
-                const data = await response.json();
-                const fileList = data.tree.filter(file => file.path.endsWith(".html"));
-
-                const plotList = document.getElementById("plot-list");
-                fileList.forEach(file => {
-                    const listItem = document.createElement("li");
-                    const link = document.createElement("a");
-                    link.href = file.path;
-                    link.textContent = file.path;
-                    link.target = "_blank";  // Open in a new tab
-                    listItem.appendChild(link);
-                    plotList.appendChild(listItem);
-                });
-
-            } catch (error) {
-                console.error("Error fetching plot files:", error);
-                document.getElementById("plot-list").innerHTML = "<p>Error loading plots.</p>";
-            }
-        }
-
-        fetchPlots();
-    </script>
+    <p>Browse directories or open plots directly:</p>
+    <ul>
+        {links}
+    </ul>
 </body>
 </html>
