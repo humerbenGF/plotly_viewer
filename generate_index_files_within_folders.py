@@ -1,9 +1,10 @@
 import os
 
-# Skip system and hidden directories, especially .github/
+# Skip system and hidden directories, especially .github/ and .git/
 def should_skip_directory(dir_path):
     parts = dir_path.split(os.sep)
-    return any(part.startswith('.') for part in parts)  # Skip hidden directories
+    return any(part.startswith('.') or part in {'.git', '.github'} for part in parts)  # Explicitly exclude .git and .github
+
 
 # Function to generate an index.html file inside a given folder
 def generate_index_html(folder_path):
